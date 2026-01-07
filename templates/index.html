@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Королевская биржа - Тогучин</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="logo-container">
+                    <img src="/static/images/logo.png" alt="Логотип Королевской биржи" class="logo">
+                </div>
+                <div class="header-text">
+                    <h1>Королевская Биржа</h1>
+                    <h2>Бургундия. Тогучин</h2>
+                    <div class="round-info">
+                        <span>Раунд: <strong id="current-round">1</strong></span>
+                        <span>Игроков: <strong id="num-players">0</strong></span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- Цены на ресурсы -->
+            <section id="prices-section" class="panel">
+                <h3>💰 Цены на ресурсы</h3>
+                <div class="table-container">
+                    <table id="prices-table">
+                        <thead>
+                            <tr>
+                                <th>Ресурс</th>
+                                <th>Цена</th>
+                                <th>Раунд</th>
+                                <th>Игра</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prices-body">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Построенные объекты -->
+            <section id="buildings-section" class="panel">
+                <h3>🏰 Построенные объекты</h3>
+                <div class="buildings-grid" id="buildings-grid">
+                </div>
+            </section>
+
+            <!-- Турнирная таблица -->
+            <section id="leaderboard-section" class="panel">
+                <h3>🏆 Турнирная таблица</h3>
+                <div class="table-container">
+                    <table id="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>Место</th>
+                                <th>Игрок</th>
+                                <th>Капитализация</th>
+                                <th>Прирост</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-body">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Модальное окно для деталей ресурса -->
+    <div id="resource-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" id="resource-modal-close">&times;</span>
+            <button class="modal-nav modal-nav-left" id="resource-modal-nav-left" title="Предыдущий ресурс">‹</button>
+            <button class="modal-nav modal-nav-right" id="resource-modal-nav-right" title="Следующий ресурс">›</button>
+            <div class="modal-body">
+                <div class="modal-left">
+                    <h2 id="resource-modal-name" class="modal-resource-name"></h2>
+                    <div id="resource-modal-image-container" class="modal-resource-image-container">
+                        <!-- Место для картинки ресурса -->
+                        <img id="resource-modal-image" src="" alt="" class="modal-resource-image" style="display: none;">
+                    </div>
+                    <div class="modal-resource-stats">
+                        <div class="modal-stat-item">
+                            <span class="modal-stat-label">Текущая цена:</span>
+                            <span id="resource-modal-price" class="modal-stat-value"></span>
+                        </div>
+                        <div class="modal-stat-item">
+                            <span class="modal-stat-label">Изменение за раунд:</span>
+                            <span id="resource-modal-change-round" class="modal-stat-value"></span>
+                        </div>
+                        <div class="modal-stat-item">
+                            <span class="modal-stat-label">Изменение с начала игры:</span>
+                            <span id="resource-modal-change-start" class="modal-stat-value"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-right">
+                    <div class="modal-resource-indicators">
+                        <div class="modal-indicator-item">
+                            <span class="modal-indicator-label">Спрос:</span>
+                            <span id="resource-modal-demand" class="modal-indicator-value"></span>
+                        </div>
+                        <div class="modal-indicator-item">
+                            <span class="modal-indicator-label">Предложение:</span>
+                            <span id="resource-modal-supply" class="modal-indicator-value"></span>
+                        </div>
+                    </div>
+                    <h3 class="modal-chart-title">График цены</h3>
+                    <div class="modal-chart-container">
+                        <canvas id="resource-price-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для деталей объекта -->
+    <div id="building-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <button class="modal-nav modal-nav-left" id="modal-nav-left" title="Предыдущий объект">‹</button>
+            <button class="modal-nav modal-nav-right" id="modal-nav-right" title="Следующий объект">›</button>
+            <div class="modal-body">
+                <div class="modal-left">
+                    <h2 id="modal-building-name" class="modal-building-name"></h2>
+                    <img id="modal-building-image" src="" alt="" class="modal-building-image">
+                    <div class="modal-stats">
+                        <div class="modal-stat-item">
+                            <span class="modal-stat-label">Всего объектов:</span>
+                            <span id="modal-building-count" class="modal-stat-value"></span>
+                        </div>
+                        <div class="modal-stat-item">
+                            <span class="modal-stat-label">Игроков владеют:</span>
+                            <span id="modal-building-percentage" class="modal-stat-value"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-right">
+                    <h3 class="modal-owners-title">Владельцы</h3>
+                    <div id="modal-owners-list" class="modal-owners-list">
+                        <!-- Список владельцев будет добавлен через JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,699 @@
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
+/* Шрифт Stieglitz для заголовков */
+@font-face {
+    font-family: 'Stieglitz';
+    src: url('/static/fonts/Stieglitz.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Crimson Text', serif;
+    font-size: 1.125em; /* Уменьшено на 10% от 1.25em */
+    background-image: url('/static/images/background.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    color: #f4e4c1;
+    min-height: 100vh;
+    padding: 20px;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(28, 24, 16, 0.7);
+    z-index: -1;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+header {
+    margin-bottom: 20px;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, rgba(139, 69, 19, 0.4) 0%, rgba(101, 67, 33, 0.4) 100%);
+    border: 2px solid #8b4513;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.logo {
+    height: 144px; /* Увеличено еще на 20%: 120 * 1.2 */
+    width: auto;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+}
+
+.header-text {
+    flex: 1;
+    text-align: left;
+}
+
+.header-text h1 {
+    font-family: 'Stieglitz', serif;
+    font-size: 2.75em; /* Увеличено на 25%: 2.2 * 1.25 */
+    font-weight: normal;
+    color: #d4af37;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 15px rgba(212, 175, 55, 0.3);
+    margin: 0 0 5px 0;
+    letter-spacing: 2px;
+}
+
+.header-text h2 {
+    font-family: 'Stieglitz', serif;
+    font-size: 1.625em; /* Увеличено на 25%: 1.3 * 1.25 */
+    color: #c9a961;
+    margin: 0 0 8px 0;
+    font-weight: normal;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.round-info {
+    display: flex;
+    gap: 20px;
+    font-size: 1.25em; /* Увеличено на 25%: 1.0 * 1.25 */
+    color: #e8d5b7;
+    margin: 0;
+}
+
+.round-info strong {
+    color: #d4af37;
+    font-size: 1.625em; /* Увеличено на 25%: 1.3 * 1.25 */
+}
+
+main {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 20px;
+}
+
+/* Блоки цен и объектов на одной строчке */
+#prices-section {
+    grid-column: 1;
+    max-width: 500px;
+}
+
+#buildings-section {
+    grid-column: 2;
+}
+
+.panel {
+    background: linear-gradient(135deg, rgba(222, 184, 135, 0.5) 0%, rgba(205, 180, 150, 0.5) 100%);
+    border: 2px solid #8b4513;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+}
+
+
+#leaderboard-section {
+    grid-column: 1 / -1;
+}
+
+h3 {
+    font-family: 'Stieglitz', serif;
+    font-size: 1.875em; /* Увеличено на 25%: 1.5 * 1.25 */
+    color: #d4af37;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #8b4513;
+    padding-bottom: 10px;
+    font-weight: normal;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1.375em; /* Увеличено на 25%: 1.1 * 1.25 */
+}
+
+#prices-table {
+    font-size: 1.1em; /* Меньше для таблицы цен */
+}
+
+thead {
+    background: rgba(139, 69, 19, 0.5);
+}
+
+th {
+    font-family: 'Stieglitz', serif;
+    padding: 12px;
+    text-align: center;
+    color: #d4af37;
+    font-weight: normal;
+    border-bottom: 2px solid #8b4513;
+    font-size: 1.1em; /* Уменьшено */
+}
+
+td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(139, 69, 19, 0.3);
+    text-align: center;
+    color: #3a2a1a; /* Темный цвет по умолчанию */
+    font-weight: 700; /* Все цифры жирные */
+}
+
+#prices-table tbody tr {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#prices-table tbody tr:hover {
+    background: rgba(212, 175, 55, 0.2);
+}
+
+/* Специальные стили для таблицы цен */
+#prices-table td {
+    color: #3a2a1a; /* Темный цвет для цен */
+}
+
+#prices-table td strong {
+    color: #3a2a1a; /* Темный цвет для названий ресурсов */
+}
+
+/* Приросты в таблице цен должны использовать цвета классов positive/negative */
+#prices-table td.positive {
+    color: #006400 !important; /* Темно-зеленый для роста */
+}
+
+#prices-table td.negative {
+    color: #5E2129 !important; /* Винно-красный для падения */
+}
+
+/* Стили для турнирной таблицы */
+#leaderboard-table td {
+    color: #3a2a1a; /* Темный цвет */
+}
+
+#leaderboard-table td strong {
+    color: #3a2a1a; /* Темный цвет для места */
+}
+
+/* Прирост в турнирной таблице должен использовать цвета классов positive/negative */
+#leaderboard-table td.positive {
+    color: #006400 !important; /* Темно-зеленый для роста */
+}
+
+#leaderboard-table td.negative {
+    color: #5E2129 !important; /* Винно-красный для падения */
+}
+
+tbody tr:hover {
+    background: rgba(212, 175, 55, 0.1);
+}
+
+.positive {
+    color: #006400; /* Темно-зеленый (dark green) для лучшей читаемости */
+    font-weight: 700; /* Жирный */
+}
+
+.negative {
+    color: #5E2129; /* Винно-красный для лучшей читаемости */
+    font-weight: 700; /* Жирный */
+}
+
+.neutral {
+    color: #e8d5b7;
+}
+
+.buildings-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.building-card {
+    background: rgba(222, 184, 135, 0.4);
+    border: 2px solid #8b4513;
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    max-width: 200px;
+    margin: 0 auto;
+}
+
+.building-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+}
+
+.building-name {
+    font-family: 'Stieglitz', serif;
+    font-size: 1.2em;
+    color: #3a2a1a; /* Темный цвет */
+    margin-bottom: 3px;
+    font-weight: normal;
+    line-height: 1.2;
+}
+
+
+.building-image {
+    width: 100px;
+    height: auto;
+    margin: 3px 0;
+    object-fit: contain;
+}
+
+.building-stats {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 3px;
+    width: 100%;
+}
+
+.building-count {
+    font-size: 2.2em;
+    color: #c9a961;
+    font-weight: 700; /* Жирный */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    background: rgba(139, 69, 19, 0.3);
+    border: 2px solid #8b4513;
+    border-radius: 5px;
+}
+
+.building-percentage-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.building-percentage {
+    font-size: 1.4em;
+    color: #3a2a1a; /* Темный цвет */
+    font-weight: 700; /* Жирный */
+}
+
+.building-percentage-label {
+    font-size: 0.65em;
+    color: #3a2a1a; /* Темный цвет */
+    margin-top: 2px;
+}
+
+/* Модальное окно */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: linear-gradient(135deg, rgba(222, 184, 135, 0.95) 0%, rgba(205, 180, 150, 0.95) 100%);
+    margin: 5% auto;
+    padding: 30px;
+    border: 3px solid #8b4513;
+    border-radius: 12px;
+    width: 80%;
+    max-width: 900px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+    position: relative;
+}
+
+.modal-close {
+    color: #3a2a1a;
+    float: right;
+    font-size: 2.5em;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+    z-index: 1001;
+    position: relative;
+}
+
+.modal-close:hover,
+.modal-close:focus {
+    color: #8b4513;
+}
+
+/* Кнопки навигации */
+.modal-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(222, 184, 135, 0.9);
+    border: 3px solid #8b4513;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 3em;
+    color: #3a2a1a;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    z-index: 1001;
+    user-select: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.modal-nav:hover {
+    background: rgba(205, 180, 150, 1);
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.7);
+}
+
+.modal-nav:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.modal-nav-left {
+    left: -30px;
+}
+
+.modal-nav-right {
+    right: -30px;
+}
+
+.modal-nav:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.modal-nav:disabled:hover {
+    transform: translateY(-50%);
+    background: rgba(222, 184, 135, 0.9);
+}
+
+.modal-body {
+    display: flex;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.modal-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.modal-building-image {
+    width: 400px;
+    height: auto;
+    margin-bottom: 20px;
+    object-fit: contain;
+}
+
+.modal-building-name {
+    font-family: 'Stieglitz', serif;
+    font-size: 2em;
+    color: #3a2a1a;
+    margin-bottom: 20px;
+    font-weight: normal;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Стили для модального окна ресурса */
+.modal-resource-name {
+    font-family: 'Stieglitz', serif;
+    font-size: 2em;
+    color: #3a2a1a;
+    margin-bottom: 20px;
+    font-weight: normal;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.modal-resource-image-container {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(139, 69, 19, 0.1);
+    border: 2px solid #8b4513;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.modal-resource-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.modal-resource-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+}
+
+.modal-resource-indicators {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.modal-indicator-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: rgba(139, 69, 19, 0.2);
+    border-radius: 5px;
+    border: 1px solid #8b4513;
+}
+
+.modal-indicator-label {
+    font-size: 1.2em;
+    color: #3a2a1a;
+    font-weight: 600;
+}
+
+.modal-indicator-value {
+    font-size: 1.3em;
+    color: #3a2a1a;
+    font-weight: 700;
+    text-transform: capitalize;
+    padding: 5px 15px;
+    background: rgba(139, 69, 19, 0.3);
+    border-radius: 5px;
+    border: 2px solid #8b4513;
+}
+
+/* Пастельные цвета для уровней спроса и предложения */
+.modal-indicator-value[data-level="высокий"],
+.modal-indicator-value[data-level="высокое"] {
+    background: rgba(144, 238, 144, 0.6); /* Пастельный зеленый */
+    border-color: #90ee90;
+}
+
+.modal-indicator-value[data-level="базовый"],
+.modal-indicator-value[data-level="базовое"] {
+    background: rgba(255, 228, 196, 0.6); /* Пастельный бежевый */
+    border-color: #deb887;
+}
+
+.modal-indicator-value[data-level="низкий"],
+.modal-indicator-value[data-level="низкое"] {
+    background: rgba(255, 182, 193, 0.6); /* Пастельный розовый */
+    border-color: #ffb6c1;
+}
+
+.modal-chart-title {
+    font-family: 'Stieglitz', serif;
+    font-size: 1.8em;
+    color: #3a2a1a;
+    margin-bottom: 15px;
+    font-weight: normal;
+    border-bottom: 2px solid #8b4513;
+    padding-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.modal-chart-container {
+    width: 100%;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    border: 1px solid #8b4513;
+    padding: 10px;
+}
+
+#resource-price-chart {
+    width: 100%;
+    height: 100%;
+}
+
+.modal-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+}
+
+.modal-stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: rgba(139, 69, 19, 0.2);
+    border-radius: 5px;
+    border: 1px solid #8b4513;
+}
+
+.modal-stat-label {
+    font-size: 1.2em;
+    color: #3a2a1a;
+    font-weight: 600;
+}
+
+.modal-stat-value {
+    font-size: 1.5em;
+    color: #3a2a1a;
+    font-weight: 700; /* Жирный */
+}
+
+/* Цвета для процентов в модальном окне ресурса */
+.modal-stat-value.positive {
+    color: #006400 !important; /* Темно-зеленый */
+}
+
+.modal-stat-value.negative {
+    color: #5E2129 !important; /* Винно-красный */
+}
+
+.modal-stat-value.neutral {
+    color: #3a2a1a; /* Темный */
+}
+
+.modal-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-owners-title {
+    font-family: 'Stieglitz', serif;
+    font-size: 1.8em;
+    color: #3a2a1a;
+    margin-bottom: 15px;
+    font-weight: normal;
+    border-bottom: 2px solid #8b4513;
+    padding-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.modal-owners-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.modal-owner-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: rgba(139, 69, 19, 0.2);
+    border-radius: 5px;
+    border: 1px solid #8b4513;
+}
+
+.modal-owner-name {
+    font-size: 1.2em;
+    color: #3a2a1a;
+    font-weight: 600;
+}
+
+.modal-owner-count {
+    font-size: 1.4em;
+    color: #c9a961;
+    font-weight: 700;
+    background: rgba(139, 69, 19, 0.3);
+    padding: 5px 15px;
+    border-radius: 5px;
+    border: 2px solid #8b4513;
+}
+
+.building-card {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.building-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+}
+
+@media (max-width: 1200px) {
+    main {
+        grid-template-columns: 1fr;
+    }
+    
+    #prices-section,
+    #buildings-section {
+        grid-column: 1;
+    }
+    
+    .modal-body {
+        flex-direction: column;
+    }
+    
+    .modal-content {
+        width: 90%;
+        margin: 10% auto;
+    }
+}
+
