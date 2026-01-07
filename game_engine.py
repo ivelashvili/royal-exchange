@@ -41,6 +41,8 @@ class Player:
     money: float = STARTING_MONEY
     resources: Dict[str, int] = field(default_factory=dict)
     buildings: List[Building] = field(default_factory=list)
+    nickname: Optional[str] = None  # Никнейм для игры
+    photo_url: Optional[str] = None  # URL фото профиля
     
     def get_resource(self, resource: str) -> int:
         """Получить количество ресурса"""

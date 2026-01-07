@@ -9,39 +9,170 @@ let prices = [];
 let currentRound = 1;
 let playerId = null;
 let playerName = null;
+let isAuthorized = false;
+let telegramUser = null;
+let updateInterval = null; // Интервал для обновления данных
 
 // Инициализация
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         // Получаем данные пользователя из Telegram
-        const user = tg.initDataUnsafe?.user;
-        if (!user) {
+        telegramUser = tg.initDataUnsafe?.user;
+        if (!telegramUser) {
             showToast('Ошибка авторизации', 'error');
             return;
         }
 
-        playerId = `tg_${user.id}`;
-        playerName = user.first_name || user.username || 'Игрок';
-
-        // Обновляем имя игрока
-        document.getElementById('player-name').textContent = playerName;
-
-        // Загружаем начальные данные
-        await loadPlayerState();
-        await loadPrices();
-        await loadRoundInfo();
-
-        // Обновляем данные каждые 2 секунды
-        setInterval(async () => {
-            await loadPlayerState();
-            await loadPrices();
-            await loadRoundInfo();
-        }, 2000);
+        playerId = `tg_${telegramUser.id}`;
+        
+        // Проверяем, авторизован ли игрок
+        await checkAuth();
     } catch (error) {
         console.error('Ошибка инициализации:', error);
         showToast('Ошибка загрузки данных', 'error');
     }
 });
+
+// Проверка авторизации
+async function checkAuth() {
+    try {
+        const response = await fetch('/api/miniapp/player/state', {
+            headers: {
+                'X-Telegram-Init-Data': tg.initData
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Ошибка проверки авторизации');
+        }
+
+        const data = await response.json();
+        
+        // Если игрок не найден или нет никнейма - показываем окно авторизации
+        if (!data.nickname) {
+            showAuthModal();
+            return;
+        }
+
+        // Игрок авторизован
+        isAuthorized = true;
+        playerName = data.nickname;
+        document.getElementById('main-container').style.display = 'block';
+        
+        // Загружаем начальные данные
+        await loadPlayerState();
+        await loadPrices();
+        await loadRoundInfo();
+
+        // Обновляем данные каждые 2 секунды (очищаем предыдущий интервал, если есть)
+        if (updateInterval) {
+            clearInterval(updateInterval);
+        }
+        updateInterval = setInterval(async () => {
+            await loadPlayerState();
+            await loadPrices();
+            await loadRoundInfo();
+        }, 2000);
+    } catch (error) {
+        console.error('Ошибка проверки авторизации:', error);
+        // Если игрок не найден, показываем окно авторизации
+        showAuthModal();
+    }
+}
+
+// Показать окно авторизации
+function showAuthModal() {
+    const modal = document.getElementById('auth-modal');
+    modal.style.display = 'block';
+    
+    // Предзаполняем никнейм из Telegram
+    const telegramName = telegramUser?.first_name || telegramUser?.username || '';
+    document.getElementById('nickname-input').value = telegramName;
+    
+    // Показываем фото из Telegram, если есть
+    if (telegramUser?.photo_url) {
+        useTelegramPhoto();
+    }
+}
+
+// Использовать фото из Telegram
+function useTelegramPhoto() {
+    if (telegramUser?.photo_url) {
+        const previewImg = document.getElementById('preview-image');
+        const placeholder = document.getElementById('photo-placeholder');
+        previewImg.src = telegramUser.photo_url;
+        previewImg.style.display = 'block';
+        placeholder.style.display = 'none';
+    } else {
+        showToast('Фото в профиле Telegram не найдено', 'error');
+    }
+}
+
+// Сохранить данные авторизации
+async function saveAuthData() {
+    const nickname = document.getElementById('nickname-input').value.trim();
+    
+    if (!nickname) {
+        showToast('Введите никнейм', 'error');
+        return;
+    }
+
+    if (nickname.length < 2) {
+        showToast('Никнейм должен быть не менее 2 символов', 'error');
+        return;
+    }
+
+    showLoading(true);
+
+    try {
+        const photoUrl = telegramUser?.photo_url || null;
+        const previewImg = document.getElementById('preview-image');
+        const finalPhotoUrl = previewImg.style.display === 'block' ? previewImg.src : null;
+
+        const response = await fetch('/api/miniapp/player/auth', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Telegram-Init-Data': tg.initData
+            },
+            body: JSON.stringify({
+                nickname: nickname,
+                photo_url: finalPhotoUrl
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            isAuthorized = true;
+            playerName = nickname;
+            document.getElementById('auth-modal').style.display = 'none';
+            document.getElementById('main-container').style.display = 'block';
+            
+            // Загружаем начальные данные
+            await loadPlayerState();
+            await loadPrices();
+            await loadRoundInfo();
+
+            // Обновляем данные каждые 2 секунды (очищаем предыдущий интервал, если есть)
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+            updateInterval = setInterval(async () => {
+                await loadPlayerState();
+                await loadPrices();
+                await loadRoundInfo();
+            }, 2000);
+        } else {
+            showToast(data.message || 'Ошибка сохранения данных', 'error');
+        }
+    } catch (error) {
+        console.error('Ошибка сохранения данных:', error);
+        showToast('Ошибка сохранения данных', 'error');
+    } finally {
+        showLoading(false);
+    }
+}
 
 // Загрузка состояния игрока
 async function loadPlayerState() {
@@ -103,6 +234,24 @@ function updatePlayerInfo() {
     if (!playerState) return;
 
     document.getElementById('player-money').textContent = Math.round(playerState.money || 0);
+    
+    // Обновляем имя игрока
+    if (playerState.nickname) {
+        document.getElementById('player-name').textContent = playerState.nickname;
+    }
+    
+    // Обновляем аватар
+    const avatarImg = document.getElementById('player-avatar');
+    const avatarPlaceholder = document.getElementById('player-avatar-placeholder');
+    
+    if (playerState.photo_url) {
+        avatarImg.src = playerState.photo_url;
+        avatarImg.style.display = 'block';
+        avatarPlaceholder.style.display = 'none';
+    } else {
+        avatarImg.style.display = 'none';
+        avatarPlaceholder.style.display = 'flex';
+    }
 }
 
 // Обновление ресурсов

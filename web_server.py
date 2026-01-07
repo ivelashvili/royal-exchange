@@ -396,11 +396,15 @@ async def get_player_state(request: Request, x_telegram_init_data: Optional[str]
     
     player = game_instance.get_player(player_id)
     if not player:
-        # Автоматически добавляем игрока, если его нет
-        user = verify_telegram_auth(x_telegram_init_data)
-        player_name = user.get('first_name', user.get('username', 'Игрок')) if user else 'Игрок'
-        game_instance.add_player(player_id, player_name)
-        player = game_instance.get_player(player_id)
+        # Игрок не найден - нужно авторизоваться
+        return {
+            "player_id": None,
+            "nickname": None,
+            "photo_url": None,
+            "money": 0,
+            "resources": {},
+            "buildings": []
+        }
     
     # Формируем ответ
     buildings_data = []
@@ -414,9 +418,51 @@ async def get_player_state(request: Request, x_telegram_init_data: Optional[str]
     return {
         "player_id": player.id,
         "name": player.name,
+        "nickname": player.nickname,
+        "photo_url": player.photo_url,
         "money": int(round(player.money)),
         "resources": player.resources.copy(),
         "buildings": buildings_data
+    }
+
+@app.post("/api/miniapp/player/auth")
+async def save_player_auth(request: Request, x_telegram_init_data: Optional[str] = Header(None)):
+    """Сохранить данные авторизации игрока (никнейм и фото)"""
+    if not game_instance:
+        raise HTTPException(status_code=500, detail="Игра не инициализирована")
+    
+    if not x_telegram_init_data:
+        raise HTTPException(status_code=401, detail="Не авторизован")
+    
+    player_id = get_player_id_from_telegram(x_telegram_init_data)
+    if not player_id:
+        raise HTTPException(status_code=401, detail="Неверная авторизация")
+    
+    data = await request.json()
+    nickname = data.get("nickname", "").strip()
+    photo_url = data.get("photo_url")
+    
+    if not nickname or len(nickname) < 2:
+        return {"success": False, "message": "Никнейм должен быть не менее 2 символов"}
+    
+    # Проверяем, существует ли игрок
+    player = game_instance.get_player(player_id)
+    if not player:
+        # Создаем нового игрока
+        user = verify_telegram_auth(x_telegram_init_data)
+        default_name = user.get('first_name', user.get('username', 'Игрок')) if user else 'Игрок'
+        game_instance.add_player(player_id, default_name)
+        player = game_instance.get_player(player_id)
+    
+    # Обновляем никнейм и фото
+    player.nickname = nickname
+    player.photo_url = photo_url
+    
+    return {
+        "success": True,
+        "message": "Данные сохранены",
+        "nickname": nickname,
+        "photo_url": photo_url
     }
 
 @app.get("/api/miniapp/prices")

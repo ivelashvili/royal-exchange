@@ -8,21 +8,58 @@
     <link rel="stylesheet" href="/static/miniapp.css">
 </head>
 <body>
-    <div class="container">
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="modal">
+        <div class="modal-content auth-modal-content">
+            <h2>Добро пожаловать!</h2>
+            <p class="auth-description">Выберите никнейм для игры и фото профиля</p>
+            
+            <div class="auth-photo-section">
+                <div class="photo-preview" id="photo-preview">
+                    <img id="preview-image" src="" alt="Фото профиля" style="display: none;">
+                    <div id="photo-placeholder">📷</div>
+                </div>
+                <button class="photo-btn" onclick="useTelegramPhoto()">Использовать фото из Telegram</button>
+            </div>
+            
+            <div class="auth-input-section">
+                <label for="nickname-input">Никнейм:</label>
+                <input type="text" id="nickname-input" class="nickname-input" placeholder="Введите никнейм" maxlength="20">
+            </div>
+            
+            <button class="confirm-btn" onclick="saveAuthData()">Начать игру</button>
+        </div>
+    </div>
+
+    <div class="container" id="main-container" style="display: none;">
         <!-- Header -->
         <header class="header">
-            <h1>Королевская Биржа</h1>
-            <div class="round-info">
-                <span>Раунд: <strong id="current-round">1</strong></span>
+            <div class="header-content">
+                <div class="logo-container">
+                    <img src="/static/images/logo.png" alt="Логотип" class="logo">
+                </div>
+                <div class="header-text">
+                    <h1>Королевская Биржа</h1>
+                    <h2>Бургундия. Тогучин</h2>
+                    <div class="round-info">
+                        <span>Раунд: <strong id="current-round">1</strong></span>
+                    </div>
+                </div>
             </div>
         </header>
 
         <!-- Player Info -->
         <div class="player-info">
-            <div class="player-name" id="player-name">Загрузка...</div>
-            <div class="player-balance">
-                <span class="label">Баланс:</span>
-                <span class="value" id="player-money">0</span> <span class="currency">монет</span>
+            <div class="player-avatar-section">
+                <img id="player-avatar" src="" alt="Аватар" class="player-avatar" style="display: none;">
+                <div id="player-avatar-placeholder" class="player-avatar-placeholder">👤</div>
+            </div>
+            <div class="player-details">
+                <div class="player-name" id="player-name">Загрузка...</div>
+                <div class="player-balance">
+                    <span class="label">Баланс:</span>
+                    <span class="value" id="player-money">0</span> <span class="currency">монет</span>
+                </div>
             </div>
         </div>
 
