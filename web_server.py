@@ -2,15 +2,18 @@
 Веб-сервер для отображения игры на проекторе
 FastAPI + WebSocket для обновлений в реальном времени
 """
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException, Header
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from typing import Dict, List
+from typing import Dict, List, Optional
 import json
 import asyncio
-from urllib.parse import unquote
-from game_engine import Game
-from game_config import RESOURCE_PRICES
+import hmac
+import hashlib
+import base64
+from urllib.parse import unquote, parse_qs
+from game_engine import Game, BuildingStatus
+from game_config import RESOURCE_PRICES, BUILDING_COSTS, BUILDING_INCOME
 
 app = FastAPI(title="Королевская биржа - Веб-интерфейс")
 
@@ -38,6 +41,12 @@ def set_game(game: Game):
 async def get_main_page():
     """Главная страница"""
     with open("templates/index.html", "r", encoding="utf-8") as f:
+        return f.read()
+
+@app.get("/miniapp", response_class=HTMLResponse)
+async def get_miniapp_page():
+    """Страница Telegram Mini App"""
+    with open("templates/miniapp.html", "r", encoding="utf-8") as f:
         return f.read()
 
 @app.get("/api/leaderboard")
@@ -341,6 +350,219 @@ async def broadcast_update():
     for conn in disconnected:
         if conn in active_connections:
             active_connections.remove(conn)
+
+# ========== TELEGRAM MINI APP API ==========
+
+def verify_telegram_auth(init_data: str) -> Optional[Dict]:
+    """
+    Проверка авторизации через Telegram WebApp API
+    В продакшене нужно использовать секретный ключ бота
+    Для тестирования упрощенная проверка
+    """
+    try:
+        # Парсим init_data
+        params = parse_qs(init_data)
+        
+        # Извлекаем данные пользователя
+        user_str = params.get('user', [None])[0]
+        if not user_str:
+            return None
+        
+        user = json.loads(user_str)
+        return user
+    except Exception as e:
+        print(f"Ошибка проверки авторизации: {e}")
+        return None
+
+def get_player_id_from_telegram(init_data: str) -> Optional[str]:
+    """Получить player_id из Telegram данных"""
+    user = verify_telegram_auth(init_data)
+    if not user:
+        return None
+    return f"tg_{user.get('id')}"
+
+@app.get("/api/miniapp/player/state")
+async def get_player_state(request: Request, x_telegram_init_data: Optional[str] = Header(None)):
+    """Получить состояние игрока"""
+    if not game_instance:
+        raise HTTPException(status_code=500, detail="Игра не инициализирована")
+    
+    if not x_telegram_init_data:
+        raise HTTPException(status_code=401, detail="Не авторизован")
+    
+    player_id = get_player_id_from_telegram(x_telegram_init_data)
+    if not player_id:
+        raise HTTPException(status_code=401, detail="Неверная авторизация")
+    
+    player = game_instance.get_player(player_id)
+    if not player:
+        # Автоматически добавляем игрока, если его нет
+        user = verify_telegram_auth(x_telegram_init_data)
+        player_name = user.get('first_name', user.get('username', 'Игрок')) if user else 'Игрок'
+        game_instance.add_player(player_id, player_name)
+        player = game_instance.get_player(player_id)
+    
+    # Формируем ответ
+    buildings_data = []
+    for building in player.buildings:
+        buildings_data.append({
+            "id": building.id,
+            "name": building.name,
+            "status": building.status.value
+        })
+    
+    return {
+        "player_id": player.id,
+        "name": player.name,
+        "money": int(round(player.money)),
+        "resources": player.resources.copy(),
+        "buildings": buildings_data
+    }
+
+@app.get("/api/miniapp/prices")
+async def get_miniapp_prices():
+    """Получить текущие цены (упрощенная версия для Mini App)"""
+    if not game_instance:
+        raise HTTPException(status_code=500, detail="Игра не инициализирована")
+    
+    result = []
+    for resource, price in sorted(game_instance.current_prices.items()):
+        result.append({
+            "resource": resource,
+            "current_price": int(round(price)),
+            "change_from_prev_percent": 0  # Упрощенно, можно добавить расчет
+        })
+    
+    return {"prices": result}
+
+@app.get("/api/miniapp/round-info")
+async def get_round_info():
+    """Получить информацию о текущем раунде"""
+    if not game_instance:
+        raise HTTPException(status_code=500, detail="Игра не инициализирована")
+    
+    return {
+        "current_round": game_instance.current_round,
+        "num_players": len(game_instance.players)
+    }
+
+@app.get("/api/miniapp/buildings")
+async def get_available_buildings(request: Request, x_telegram_init_data: Optional[str] = Header(None)):
+    """Получить список доступных объектов для строительства"""
+    if not game_instance:
+        raise HTTPException(status_code=500, detail="Игра не инициализирована")
+    
+    if not x_telegram_init_data:
+        raise HTTPException(status_code=401, detail="Не авторизован")
+    
+    player_id = get_player_id_from_telegram(x_telegram_init_data)
+    if not player_id:
+        raise HTTPException(status_code=401, detail="Неверная авторизация")
+    
+    player = game_instance.get_player(player_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Игрок не найден")
+    
+    result = []
+    for building_name, costs in BUILDING_COSTS.items():
+        can_build = player.has_resources(costs)
+        cost = game_instance.calculate_building_cost(building_name)
+        
+        # Формируем описание стоимости
+        cost_details = []
+        for resource, amount in costs.items():
+            cost_details.append(f"{amount} {resource}")
+        
+        result.append({
+            "name": building_name,
+            "cost": int(round(cost)),
+            "cost_details": ", ".join(cost_details),
+            "can_build": can_build
+        })
+    
+    return {"buildings": result}
+
+@app.post("/api/miniapp/player/buy-resource")
+async def buy_resource_miniapp(request: Request, x_telegram_init_data: Optional[str] = Header(None)):
+    """Купить ресурс"""
+    if not game_instance:
+        raise HTTPException(status_code=500, detail="Игра не инициализирована")
+    
+    if not x_telegram_init_data:
+        raise HTTPException(status_code=401, detail="Не авторизован")
+    
+    player_id = get_player_id_from_telegram(x_telegram_init_data)
+    if not player_id:
+        raise HTTPException(status_code=401, detail="Неверная авторизация")
+    
+    data = await request.json()
+    resource = data.get("resource")
+    amount = data.get("amount", 1)
+    
+    result = game_instance.buy_resource(player_id, resource, amount)
+    result["cost"] = int(round(result.get("cost", 0)))
+    
+    return result
+
+@app.post("/api/miniapp/player/sell-resource")
+async def sell_resource_miniapp(request: Request, x_telegram_init_data: Optional[str] = Header(None)):
+    """Продать ресурс"""
+    if not game_instance:
+        raise HTTPException(status_code=500, detail="Игра не инициализирована")
+    
+    if not x_telegram_init_data:
+        raise HTTPException(status_code=401, detail="Не авторизован")
+    
+    player_id = get_player_id_from_telegram(x_telegram_init_data)
+    if not player_id:
+        raise HTTPException(status_code=401, detail="Неверная авторизация")
+    
+    data = await request.json()
+    resource = data.get("resource")
+    amount = data.get("amount", 1)
+    
+    result = game_instance.sell_resource(player_id, resource, amount)
+    result["income"] = int(round(result.get("income", 0)))
+    
+    return result
+
+@app.post("/api/miniapp/player/build")
+async def build_miniapp(request: Request, x_telegram_init_data: Optional[str] = Header(None)):
+    """Построить объект"""
+    if not game_instance:
+        raise HTTPException(status_code=500, detail="Игра не инициализирована")
+    
+    if not x_telegram_init_data:
+        raise HTTPException(status_code=401, detail="Не авторизован")
+    
+    player_id = get_player_id_from_telegram(x_telegram_init_data)
+    if not player_id:
+        raise HTTPException(status_code=401, detail="Неверная авторизация")
+    
+    data = await request.json()
+    building_name = data.get("building_name")
+    
+    result = game_instance.start_building(player_id, building_name)
+    return result
+
+@app.post("/api/miniapp/player/sell-building")
+async def sell_building_miniapp(request: Request, x_telegram_init_data: Optional[str] = Header(None)):
+    """Продать объект"""
+    if not game_instance:
+        raise HTTPException(status_code=500, detail="Игра не инициализирована")
+    
+    if not x_telegram_init_data:
+        raise HTTPException(status_code=401, detail="Не авторизован")
+    
+    player_id = get_player_id_from_telegram(x_telegram_init_data)
+    if not player_id:
+        raise HTTPException(status_code=401, detail="Неверная авторизация")
+    
+    data = await request.json()
+    building_id = data.get("building_id")
+    
+    result = game_instance.put_building_for_sale(player_id, building_id)
+    return result
 
 # Подключаем статические файлы
 app.mount("/static", StaticFiles(directory="static"), name="static")

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Королевская Биржа</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/miniapp.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>Королевская Биржа</h1>
+            <div class="round-info">
+                <span>Раунд: <strong id="current-round">1</strong></span>
+            </div>
+        </header>
+
+        <!-- Player Info -->
+        <div class="player-info">
+            <div class="player-name" id="player-name">Загрузка...</div>
+            <div class="player-balance">
+                <span class="label">Баланс:</span>
+                <span class="value" id="player-money">0</span> <span class="currency">монет</span>
+            </div>
+        </div>
+
+        <!-- Resources Section -->
+        <section class="section">
+            <h2>Мои ресурсы</h2>
+            <div class="resources-grid" id="resources-grid">
+                <!-- Заполняется через JS -->
+            </div>
+        </section>
+
+        <!-- Buildings Section -->
+        <section class="section">
+            <h2>Мои объекты</h2>
+            <div class="buildings-list" id="buildings-list">
+                <!-- Заполняется через JS -->
+            </div>
+        </section>
+
+        <!-- Market Prices Section -->
+        <section class="section">
+            <h2>Цены на бирже</h2>
+            <div class="prices-list" id="prices-list">
+                <!-- Заполняется через JS -->
+            </div>
+        </section>
+
+        <!-- Actions Section -->
+        <section class="section">
+            <h2>Действия</h2>
+            <div class="actions">
+                <button class="action-btn" onclick="showBuyResourceModal()">Купить ресурс</button>
+                <button class="action-btn" onclick="showSellResourceModal()">Продать ресурс</button>
+                <button class="action-btn" onclick="showBuildModal()">Построить объект</button>
+                <button class="action-btn" onclick="showSellBuildingModal()">Продать объект</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modals -->
+    <!-- Buy Resource Modal -->
+    <div id="buy-resource-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('buy-resource-modal')">&times;</span>
+            <h3>Купить ресурс</h3>
+            <div id="buy-resource-options"></div>
+        </div>
+    </div>
+
+    <!-- Sell Resource Modal -->
+    <div id="sell-resource-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('sell-resource-modal')">&times;</span>
+            <h3>Продать ресурс</h3>
+            <div id="sell-resource-options"></div>
+        </div>
+    </div>
+
+    <!-- Build Modal -->
+    <div id="build-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('build-modal')">&times;</span>
+            <h3>Построить объект</h3>
+            <div id="build-options"></div>
+        </div>
+    </div>
+
+    <!-- Sell Building Modal -->
+    <div id="sell-building-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('sell-building-modal')">&times;</span>
+            <h3>Продать объект</h3>
+            <div id="sell-building-options"></div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast" class="toast"></div>
+
+    <script src="/static/miniapp.js"></script>
+</body>
+</html>
+
